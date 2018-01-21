@@ -5,6 +5,7 @@ library json_test;
 
 import 'dart:convert';
 import 'package:fixnum/fixnum.dart' show Int64;
+import 'package:protobuf/protobuf.dart' as protobuf;
 import 'package:test/test.dart';
 
 import 'mock_util.dart' show MockMessage, mockInfo;
@@ -49,6 +50,32 @@ main() {
     final decoded = new T()..mergeFromJsonMap(encoded);
     expect(decoded.int64, value);
   });
+
+  test('testWriteToJsonProto3', () {
+    protobuf.jsonFieldKeyType = protobuf.JSONFieldKeyType.proto3;
+    String json = example.writeToJson();
+    checkJsonMapProto3(JSON.decode(json));
+  });
+
+  test('writeToJsonMapProto3', () {
+    protobuf.jsonFieldKeyType = protobuf.JSONFieldKeyType.proto3;
+    Map m = example.writeToJsonMap();
+    checkJsonMapProto3(m);
+  });
+
+  test('testMergeFromJsonProto3', () {
+    protobuf.jsonFieldKeyType = protobuf.JSONFieldKeyType.proto3;
+    var t = new T();
+    t.mergeFromJson('''{"val": 123, "str": "hello"}''');
+    checkMessage(t);
+  });
+
+  test('testMergeFromJsonMapProto3', () {
+    protobuf.jsonFieldKeyType = protobuf.JSONFieldKeyType.proto3;
+    var t = new T();
+    t.mergeFromJsonMap({"val": 123, "str": "hello"});
+    checkMessage(t);
+  });
 }
 
 checkJsonMap(Map m) {
@@ -60,4 +87,10 @@ checkJsonMap(Map m) {
 checkMessage(T t) {
   expect(t.val, 123);
   expect(t.str, "hello");
+}
+
+checkJsonMapProto3(Map m) {
+  expect(m.length, 2);
+  expect(m["val"], 123);
+  expect(m["str"], "hello");
 }
