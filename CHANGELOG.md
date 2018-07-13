@@ -5,7 +5,7 @@
   * `GeneratedMessage.mergeFromCodedBufferReader`,
   * `GeneratedMessage.mergeFromJson`,
   * `mergeFromJsonMap.mergeFromJsonMap`.
-* Added support for se-/serializing to json using tag names instead of numbers.
+* Added support for de-/serializing to json using tag names instead of numbers.
 
 ## 0.9.0
 
