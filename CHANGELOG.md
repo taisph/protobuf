@@ -1,3 +1,12 @@
+## 0.10.0
+
+* Breaking change: Changed `extensionRegistry` from optional to named parameter in the following methods:
+  * `GeneratedMessage.mergeFromBuffer`,
+  * `GeneratedMessage.mergeFromCodedBufferReader`,
+  * `GeneratedMessage.mergeFromJson`,
+  * `mergeFromJsonMap.mergeFromJsonMap`.
+* Added support for se-/serializing to json using tag names instead of numbers.
+
 ## 0.9.0
 
 * Breaking change: Changed signature of `CodedBufferWriter.writeTo` to require

@@ -6,9 +6,8 @@ part of protobuf;
 
 enum JSONFieldKeyType { jsonp, proto3 }
 
-JSONFieldKeyType jsonFieldKeyType = JSONFieldKeyType.jsonp;
-
-Map<String, dynamic> _writeToJsonMap(_FieldSet fs) {
+Map<String, dynamic> _writeToJsonMap(
+    _FieldSet fs, JSONFieldKeyType jsonFieldKeyType) {
   convertToMap(fieldValue, int fieldType) {
     int baseType = PbFieldType._baseType(fieldType);
 
@@ -53,7 +52,8 @@ Map<String, dynamic> _writeToJsonMap(_FieldSet fs) {
     if (value == null || (value is List && value.isEmpty)) {
       continue; // It's missing, repeated, or an empty byte array.
     }
-    result[_getKeyFromFieldInfo(fi)] = convertToMap(value, fi.type);
+    result[_getKeyFromFieldInfo(fi, jsonFieldKeyType)] =
+        convertToMap(value, fi.type);
   }
   if (fs._hasExtensions) {
     for (int tagNumber in sorted(fs._extensions._tagNumbers)) {
@@ -62,13 +62,14 @@ Map<String, dynamic> _writeToJsonMap(_FieldSet fs) {
         continue; // It's repeated or an empty byte array.
       }
       var fi = fs._extensions._getInfoOrNull(tagNumber);
-      result[_getKeyFromFieldInfo(fi)] = convertToMap(value, fi.type);
+      result[_getKeyFromFieldInfo(fi, jsonFieldKeyType)] =
+          convertToMap(value, fi.type);
     }
   }
   return result;
 }
 
-String _getKeyFromFieldInfo(FieldInfo fi) {
+String _getKeyFromFieldInfo(FieldInfo fi, JSONFieldKeyType jsonFieldKeyType) {
   switch (jsonFieldKeyType) {
     case JSONFieldKeyType.proto3:
       return fi.name;
@@ -78,7 +79,8 @@ String _getKeyFromFieldInfo(FieldInfo fi) {
   }
 }
 
-FieldInfo _getFieldInfoFromKey(BuilderInfo meta, String key) {
+FieldInfo _getFieldInfoFromKey(
+    BuilderInfo meta, String key, JSONFieldKeyType jsonFieldKeyType) {
   switch (jsonFieldKeyType) {
     case JSONFieldKeyType.proto3:
       return meta.byName[key];
@@ -90,27 +92,27 @@ FieldInfo _getFieldInfoFromKey(BuilderInfo meta, String key) {
 
 // Merge fields from a previously decoded JSON object.
 // (Called recursively on nested messages.)
-void _mergeFromJsonMap(
-    _FieldSet fs, Map<String, dynamic> json, ExtensionRegistry registry) {
+void _mergeFromJsonMap(_FieldSet fs, Map<String, dynamic> json,
+    ExtensionRegistry registry, JSONFieldKeyType jsonFieldKeyType) {
   Iterable<String> keys = json.keys;
   var meta = fs._meta;
   for (String key in keys) {
-    var fi = _getFieldInfoFromKey(meta, key);
+    var fi = _getFieldInfoFromKey(meta, key, jsonFieldKeyType);
     if (fi == null) {
       if (registry == null) continue; // Unknown tag; skip
       fi = registry.getExtension(fs._messageName, int.parse(key));
       if (fi == null) continue; // Unknown tag; skip
     }
     if (fi.isRepeated) {
-      _appendJsonList(fs, json[key], fi, registry);
+      _appendJsonList(fs, json[key], fi, registry, jsonFieldKeyType);
     } else {
-      _setJsonField(fs, json[key], fi, registry);
+      _setJsonField(fs, json[key], fi, registry, jsonFieldKeyType);
     }
   }
 }
 
-void _appendJsonList(
-    _FieldSet fs, List jsonList, FieldInfo fi, ExtensionRegistry registry) {
+void _appendJsonList(_FieldSet fs, List jsonList, FieldInfo fi,
+    ExtensionRegistry registry, JSONFieldKeyType jsonFieldKeyType) {
   var repeated = fi._ensureRepeatedField(fs);
   // Micro optimization. Using "for in" generates the following and iterator
   // alloc:
@@ -118,17 +120,18 @@ void _appendJsonList(
   //       t4 = J.getInterceptor$ax(repeated); t1.moveNext$0();)
   for (int i = 0, len = jsonList.length; i < len; i++) {
     var value = jsonList[i];
-    var convertedValue =
-        _convertJsonValue(fs, value, fi.tagNumber, fi.type, registry);
+    var convertedValue = _convertJsonValue(
+        fs, value, fi.tagNumber, fi.type, registry, jsonFieldKeyType);
     if (convertedValue != null) {
       repeated.add(convertedValue);
     }
   }
 }
 
-void _setJsonField(
-    _FieldSet fs, json, FieldInfo fi, ExtensionRegistry registry) {
-  var value = _convertJsonValue(fs, json, fi.tagNumber, fi.type, registry);
+void _setJsonField(_FieldSet fs, json, FieldInfo fi, ExtensionRegistry registry,
+    JSONFieldKeyType jsonFieldKeyType) {
+  var value = _convertJsonValue(
+      fs, json, fi.tagNumber, fi.type, registry, jsonFieldKeyType);
   if (value == null) return;
   // _convertJsonValue throws exception when it fails to do conversion.
   // Therefore we run _validateField for debug builds only to validate
@@ -147,7 +150,7 @@ void _setJsonField(
 /// should ignore the field value, because it is an unknown enum value.
 /// This function throws [ArgumentError] if it cannot convert the value.
 _convertJsonValue(_FieldSet fs, value, int tagNumber, int fieldType,
-    ExtensionRegistry registry) {
+    ExtensionRegistry registry, JSONFieldKeyType jsonFieldKeyType) {
   String expectedType; // for exception message
   switch (PbFieldType._baseType(fieldType)) {
     case PbFieldType._BOOL_BIT:
@@ -229,7 +232,8 @@ _convertJsonValue(_FieldSet fs, value, int tagNumber, int fieldType,
         Map<String, dynamic> messageValue = value;
         GeneratedMessage subMessage =
             fs._meta._makeEmptyMessage(tagNumber, registry);
-        _mergeFromJsonMap(subMessage._fieldSet, messageValue, registry);
+        _mergeFromJsonMap(
+            subMessage._fieldSet, messageValue, registry, jsonFieldKeyType);
         return subMessage;
       }
       expectedType = 'nested message or group';
