@@ -240,7 +240,7 @@ main() {
     checkLogOnce(log, [tag, "hello", ""]);
 
     var registry = new ExtensionRegistry()..add(comment);
-    r.mergeFromJson('{"$tag": "hello"}', registry);
+    r.mergeFromJson('{"$tag": "hello"}', extensionRegistry: registry);
     expect(r.getExtension(comment), "hello");
     r.deliverChanges();
     checkLogOnce(log, [tag, "", "hello"]);
@@ -254,7 +254,7 @@ main() {
     clear("hello");
 
     Uint8List bytes = src.writeToBuffer();
-    r.mergeFromBuffer(bytes, registry);
+    r.mergeFromBuffer(bytes, extensionRegistry: registry);
     expect(r.getExtension(comment), "hello");
     r.deliverChanges();
     checkLogOnce(log, [tag, "", "hello"]);

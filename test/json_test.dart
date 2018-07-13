@@ -37,28 +37,28 @@ main() {
   });
 
   test('testWriteToJsonProto3', () {
-    protobuf.jsonFieldKeyType = protobuf.JSONFieldKeyType.proto3;
-    String json = example.writeToJson();
+    String json =
+        example.writeToJson(jsonFieldKeyType: protobuf.JSONFieldKeyType.proto3);
     checkJsonMapProto3(JSON.decode(json));
   });
 
   test('writeToJsonMapProto3', () {
-    protobuf.jsonFieldKeyType = protobuf.JSONFieldKeyType.proto3;
-    Map m = example.writeToJsonMap();
+    Map m = example.writeToJsonMap(
+        jsonFieldKeyType: protobuf.JSONFieldKeyType.proto3);
     checkJsonMapProto3(m);
   });
 
   test('testMergeFromJsonProto3', () {
-    protobuf.jsonFieldKeyType = protobuf.JSONFieldKeyType.proto3;
     var t = new T();
-    t.mergeFromJson('''{"val": 123, "str": "hello"}''');
+    t.mergeFromJson('''{"val": 123, "str": "hello"}''',
+        jsonFieldKeyType: protobuf.JSONFieldKeyType.proto3);
     checkMessage(t);
   });
 
   test('testMergeFromJsonMapProto3', () {
-    protobuf.jsonFieldKeyType = protobuf.JSONFieldKeyType.proto3;
     var t = new T();
-    t.mergeFromJsonMap({"val": 123, "str": "hello"});
+    t.mergeFromJsonMap({"val": 123, "str": "hello"},
+        jsonFieldKeyType: protobuf.JSONFieldKeyType.proto3);
     checkMessage(t);
   });
 }

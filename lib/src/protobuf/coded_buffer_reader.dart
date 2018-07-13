@@ -64,7 +64,8 @@ class CodedBufferReader {
       throw new InvalidProtocolBufferException.recursionLimitExceeded();
     }
     ++_recursionDepth;
-    message.mergeFromCodedBufferReader(this, extensionRegistry);
+    message.mergeFromCodedBufferReader(this,
+        extensionRegistry: extensionRegistry);
     checkLastTagWas(makeTag(fieldNumber, WIRETYPE_END_GROUP));
     --_recursionDepth;
   }
@@ -99,7 +100,8 @@ class CodedBufferReader {
       throw new InvalidProtocolBufferException.truncatedMessage();
     }
     ++_recursionDepth;
-    message.mergeFromCodedBufferReader(this, extensionRegistry);
+    message.mergeFromCodedBufferReader(this,
+        extensionRegistry: extensionRegistry);
     checkLastTagWas(0);
     --_recursionDepth;
     _currentLimit = oldLimit;

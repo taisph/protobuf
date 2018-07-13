@@ -28,13 +28,13 @@ abstract class GeneratedMessage {
       List<int> input, ExtensionRegistry extensionRegistry) {
     _fieldSet = new _FieldSet(this, info_, eventPlugin);
     if (eventPlugin != null) eventPlugin.attach(this);
-    mergeFromBuffer(input, extensionRegistry);
+    mergeFromBuffer(input, extensionRegistry: extensionRegistry);
   }
 
   GeneratedMessage.fromJson(String input, ExtensionRegistry extensionRegistry) {
     _fieldSet = new _FieldSet(this, info_, eventPlugin);
     if (eventPlugin != null) eventPlugin.attach(this);
-    mergeFromJson(input, extensionRegistry);
+    mergeFromJson(input, extensionRegistry: extensionRegistry);
   }
 
   // Overridden by subclasses.
@@ -119,7 +119,7 @@ abstract class GeneratedMessage {
       _writeToCodedBufferWriter(_fieldSet, output);
 
   void mergeFromCodedBufferReader(CodedBufferReader input,
-          [ExtensionRegistry extensionRegistry = ExtensionRegistry.EMPTY]) =>
+          {ExtensionRegistry extensionRegistry = ExtensionRegistry.EMPTY}) =>
       _mergeFromCodedBufferReader(_fieldSet, input, extensionRegistry);
 
   /// Merges serialized protocol buffer data into this message.
@@ -131,7 +131,7 @@ abstract class GeneratedMessage {
   /// * Else, (it's a non-repeated sub-message), this recursively merges into
   ///   the existing sub-message.
   void mergeFromBuffer(List<int> input,
-      [ExtensionRegistry extensionRegistry = ExtensionRegistry.EMPTY]) {
+      {ExtensionRegistry extensionRegistry = ExtensionRegistry.EMPTY}) {
     CodedBufferReader codedInput = new CodedBufferReader(input);
     _mergeFromCodedBufferReader(_fieldSet, codedInput, extensionRegistry);
     codedInput.checkLastTagWas(0);
@@ -142,7 +142,8 @@ abstract class GeneratedMessage {
   /// Returns the JSON encoding of this message as a Dart [Map].
   ///
   /// The encoding is described in [GeneratedMessage.writeToJson].
-  Map<String, dynamic> writeToJsonMap() => _writeToJsonMap(_fieldSet);
+  Map<String, dynamic> writeToJsonMap({JSONFieldKeyType jsonFieldKeyType}) =>
+      _writeToJsonMap(_fieldSet, jsonFieldKeyType);
 
   /// Returns a JSON string that encodes this message.
   ///
@@ -155,19 +156,21 @@ abstract class GeneratedMessage {
   /// literals; values with a 64-bit integer datatype (regardless of their
   /// actual runtime value) are represented as strings. Enumerated values are
   /// represented as their integer value.
-  String writeToJson() => jsonEncode(writeToJsonMap());
+  String writeToJson({JSONFieldKeyType jsonFieldKeyType}) =>
+      jsonEncode(writeToJsonMap(jsonFieldKeyType: jsonFieldKeyType));
 
   /// Merges field values from [data], a JSON object, encoded as described by
   /// [GeneratedMessage.writeToJson].
   void mergeFromJson(String data,
-      [ExtensionRegistry extensionRegistry = ExtensionRegistry.EMPTY]) {
+      {ExtensionRegistry extensionRegistry = ExtensionRegistry.EMPTY,
+      JSONFieldKeyType jsonFieldKeyType = JSONFieldKeyType.jsonp}) {
     /// Disable lazy creation of Dart objects for a dart2js speedup.
     /// This is a slight regression on the Dart VM.
     /// TODO(skybrian) we could skip the reviver if we're running
     /// on the Dart VM for a slight speedup.
     final jsonMap =
         jsonDecode(data, reviver: _emptyReviver) as Map<String, dynamic>;
-    _mergeFromJsonMap(_fieldSet, jsonMap, extensionRegistry);
+    _mergeFromJsonMap(_fieldSet, jsonMap, extensionRegistry, jsonFieldKeyType);
   }
 
   static _emptyReviver(k, v) => v;
@@ -176,8 +179,9 @@ abstract class GeneratedMessage {
   ///
   /// The encoding is described in [GeneratedMessage.writeToJson].
   void mergeFromJsonMap(Map<String, dynamic> json,
-      [ExtensionRegistry extensionRegistry = ExtensionRegistry.EMPTY]) {
-    _mergeFromJsonMap(_fieldSet, json, extensionRegistry);
+      {ExtensionRegistry extensionRegistry = ExtensionRegistry.EMPTY,
+      JSONFieldKeyType jsonFieldKeyType = JSONFieldKeyType.jsonp}) {
+    _mergeFromJsonMap(_fieldSet, json, extensionRegistry, jsonFieldKeyType);
   }
 
   /// Adds an extension field value to a repeated field.
